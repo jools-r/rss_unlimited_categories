@@ -1,0 +1,9 @@
+{
+    "author": "Rob Sable, makss, jools-r",
+    "author_uri": "https:\/\/github.com\/jools-r\/rss_unlimited_categories",
+    "version": "0.8.0beta",
+    "description": "Unlimited categories (tags) per article for Txp 4.9",
+    "type": 5,
+    "order": 6,
+    "flags": 1
+}

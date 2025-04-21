@@ -1,0 +1,221 @@
+h1. Unlimited article categories in Textpattern
+
+h3. rss_unlimited_categories
+
+rss_unlimited_categories enables you to assign an unlimited number of categories to an article so that you're not limited to the default two categories provided by Textpattern.
+
+The plugin adds a multiple select list to your _Txp › Content › Write_ tab to enable the selection of unlimited categories.
+
+It also includes several public side tags to display the categories and list articles by category and an admin tab to set plugin preferences.
+
+p>. » "Plugin preferences":/textpattern/?event=rss_uc_admin_tab_pref
+
+
+h2. Installation and Setup
+
+# Simply install and enable the plugin. The plugin will automatically install a new table that relates articles to categories.
+# Navigate to the _Txp › Content › Write_ tab and you'll find a new multiple select list above the standard Textpattern category selection.
+# For existing sites, you can copy your current article/category assignments to the new category table structure using the following SQL statements:
+
+bc. INSERT INTO textpattern_category (article_id, category_id)
+SELECT t.id, c.id FROM textpattern t
+LEFT JOIN txp_category c on t.category1 = c.name
+WHERE c.type = 'article' and t.category1 != '';
+
+bc. INSERT INTO textpattern_category (article_id, category_id)
+SELECT t.id, c.id FROM textpattern t
+LEFT JOIN txp_category c on t.category2 = c.name
+WHERE c.type = 'article' and t.category2 != '';
+
+
+h2. Plugin tags
+
+All of the tags use the new category table created by this plugin instead of the standard Textpattern category 1 and 2 fields. To organise categories, use the plugin's  collection of tags in place of Textpattern's own category tags:
+
+* *rss_uc_filedunder* – Lists all categories assigned to the current article.
+* *rss_uc_cloud* – Display a weighted list of all categories as a tag cloud.
+* *rss_uc_list* – Display a list of all categories with the number of posts in each.
+* *rss_uc_article_list* – Lists articles by category. This is a replacement for the standard Textpattern article list tags.
+* *rss_uc_related* – Lists related articles by category. This is a replacement for the standard Textpattern related article tag that uses the unlimited category tables instead of the standard Textpattern category 1 and 2 fields.
+* *rss_sct_permlink* – Builds a permlink in /section/category/title format. This is used in place of the standard Textpattern permlink tag.
+* *rss_uc_count* – Displays the number of articles assigned to a given category.
+* *rss_if_article_uc* – Conditional tag that tells if a particular category is assigned to an article. This is a replacement for the standard Textpattern if_article_category tag.
+
+h2. Tag: rss_uc_filedunder
+
+h3. Alias: rss_unlimited_categories_filedunder
+
+Lists all categories assigned to the current article.
+
+|^.
+|_. attribute |_. description |_. default |_. example |
+|-.
+| parent | Accepts a comma separated list of categories. Only categories with the specified category as a parent will be displayed. |   | parent1,parent2 |
+| linktosection | The section used for category links. | Current section | section1 |
+| delim | Delimiter between linktosection and category | / | |
+| suffix | The suffix used for category links. | | |
+| linked | 0 - Plain category titles,
+1 - Linked category titles,
+2 - Plain category names
+3 - /name... | 1 | 0 |
+| usemessy | Use messy (/section/?c=category) URLs instead of clean (/section/category) URLs for category links.. | 0 | 1 |
+| sort | The field the articles are sorted by: title, name | title asc | name asc |
+| wraptag | The HTML tag that wraps the category list. | | ul |
+| class | The class attribute on the wraptag. | | myclass |
+| break | HTML/text that wraps/separates each element in the list. | , | li |
+| breakclass | The maximum number of live search results returned. | | |
+| listwraptag | The HTML tag that wraps the label and category list. | | div |
+| label | A label that appears before the list. | | File under: |
+| labeltag | The HTML tag that wraps the label. | | h4 |
+
+
+h2. Tag: rss_uc_cloud
+
+h3. Alias: rss_unlimited_categories_cloud
+
+Displays a weighted list of all categories as a “cloud”.
+
+|^.
+|_. attribute |_. description |_. default |_. example |
+|-.
+| section | Accepts a comma separated list of sections that posts are listed from. @section="!photos,writing,thoughts"@ (writing AND thoughts AND NOT photos), or just @section="!photos"@ (all sections except photos). | | section1,section2 |
+| time | Accepts one of 3 options “past”, “future” or “any”. By default (past) will display articles with a posted date before the current date/time. Selecting FUTURE will display articles with a posted date after the current date/time. Selecting ALL will display all articles regardless of posted date. | past | any |
+| limit | The maximum number of categories returned. | 999 | @limit="5"@ |
+| weightmin | The minimum weight(count) for include in "cloud". | 0 | @weightmin="5"@ |
+| parent | Only categories with the specified category as a parent will be displayed. |  | @parent="mycategory"@ |
+| linktosection | The section used for category links. | article | @linktosection="archive"@ |
+| usemessy | Use messy (/section/?c=category) URLs instead of clean (/section/category) URLs for category links. | 0 | 1 |
+| sort | The field the articles are sorted by: title, name, id | title asc | name asc |
+| cloudwraptag | The HTML tag that wraps the label and category list. | | @div@ |
+| wraptag | The HTML tag that wraps the category list. | p | @ul@ |
+| class | The class attribute on the wraptag. | | |
+| break | HTML/text that wraps/separates each element in the list. | , | @li@ |
+| breakclass | The maximum number of live search results returned. | | |
+| label | A label that appears before the list. | | |
+| labeltag | The HTML tag that wraps the label. | | @h4@ |
+
+
+h2. Tag: rss_uc_list
+
+h3. Alias: rss_unlimited_categories_list
+
+Displays a list of all categories with the number of posts in each.
+
+|^.
+|_. attribute |_. description |_. default |_. example |
+|-.
+| section | Accepts a comma separated list of sections that posts are listed from. @section="!photos,writing,thoughts"@ (writing AND thoughts AND NOT photos), or just @section="!photos"@ (all sections except photos). | | section1,section2 |
+| time | Accepts one of 3 options “past”, “future” or “any”. By default (past) will display articles with a posted date before the current date/time. Selecting FUTURE will display articles with a posted date after the current date/time. Selecting ALL will display all articles regardless of posted date. | past | any |
+| parent | Only categories with the specified category as a parent will be displayed. |  | @parent="mycategory"@ |
+| limit | The maximum number of categories returned. | 999 | @limit="5"@ |
+| offset | Excludes x number of categories from the beginning of the category listing. | 0 | |
+| linktosection | The section used for category links. | article | section1 |
+| usemessy | Use messy (/section/?c=category) URLs instead of clean (/section/category) URLs for category links.. | 0 | 1 |
+| sort | The field the articles are sorted by: title, name, id | title asc | |
+| showcount | Displays the number of posts in each category. | 1 | @showcount="0"@ |
+| countlinked | Determines whether the category count is shown inside the link. By default (1) the count is inside the link. | 1 | @countlinked="0"@ |
+| showallcount | Displays the number of posts in all categories at the end of the category listing. | 0 | @showallcount="1"@ |
+| allcountlabel | The label used for the all categories count. | All | @allcountlabel="All Categories"@ |
+| listwraptag | The HTML tag that wraps the label and category list. | | @div@ |
+| wraptag | The HTML tag that wraps the category list. | @ul@ | @p@ |
+| class | The class attribute on the wraptag. | | |
+| break | HTML/text that wraps/separates each element in the list. | @li@ | @,@ |
+| breakclass | The class attribute on the breaktag. | | |
+| label | A label that appears before the list. | | |
+| labeltag | The HTML tag that wraps the label. |  | @labeltag="h4"@ |
+| *activeclass* | This allows you to apply special class to the currently-viewed category. | | css-active-class |
+
+
+h2. Tag: rss_uc_article_list
+
+h3. Alias: rss_unlimited_categories_article_list
+
+Lists articles by category. This is a replacement for the standard Textpattern article list tags that uses the unlimited category tables instead of the standard Textpattern category 1 and 2 fields.
+
+|^.
+|_. attribute |_. description |_. default |_. example |
+|-.
+| section | Accepts a comma separated list of sections that posts are listed from. @section="!photos,writing,thoughts"@ (writing AND thoughts AND NOT photos), or just @section="!photos"@ (all sections except photos). | article | section1,section2 |
+| category | Accepts a comma separated list of categories. NO spaces after commas. If currently browsing by category, the global category will be used as the default. | @$c@ (global category) | @category="5"@ |
+| andcategory | Accepts a comma separated list of categories. NO spaces after commas. (category1 AND category2 AND ...) | @""@ | @andcategory="cat1,cat2"@ |
+| categorylogic | Logic for "category" and "andcategory" attributes. Valid choices include "AND", "OR"
+ 
+Sample: @category="cat1,cat2" andcategory="cat4,cat5" categorylogic="AND"@
+ 
+@return articles
+(cat1 OR cat2)*AND*(cat4 AND cat5)@
+ 
+Sample: @category="cat1,cat2" andcategory="cat4,cat5" categorylogic="OR"@
+ 
+@return articles
+(cat1 OR cat2)*OR*(cat4 AND cat5)@ | @"AND"@ | @categorylogic="OR"@ |
+| usechildren | If a single article category is specified and that category is a parent category, articles assigned to the parent's child categories will be listed rather than articles assigned to the parent. | 0 | @usechildren="1"@ |
+| form | The article form used in the article list. | default | @form="myform"@ |
+| limit | The maximum number of articles returned. | 999 | |
+| offset | Excludes x number of articles from the beginning of the article listing. | 0 | |
+| time | Accepts one of 3 options “past”, “future” or “any”. By default (past) will display articles with a posted date before the current date/time. Selecting FUTURE will display articles with a posted date after the current date/time. Selecting ALL will display all articles regardless of posted date. | past | any |
+| status | Restrict by status. Available values: draft, hidden, pending, live, sticky. | live | @status="hidden"@ |
+| sort | The field the articles are sorted by. | uPosted desc | title asc |
+| id | The ID of a single article to display. |   | @id="100"@ |
+| hideself | Hide current article from listing | 1 | @hideself="0"@ |
+| filter | Indicates whether filtering is turned on. | 0 | @filter="1"@ |
+| filterfield | The field the articles are filtered on. |   | @filterfield="custom_4"@ |
+| filtername | The URL keyword that preceeds the filter. For example, these attributes (filter="1" filterfield="custom_4" filtername="byprice") would filter this URL (/article/byprice/lt/3) and display articles where the value in the custom_4 field was less than 3. The valid URL operators are *eq* (equals), *lt* (less than) and *gt* (greater than). Filter URLs must be constructed manually at this point. |   | @filtername="byprice"@ |
+
+
+h2. Tag: rss_uc_related
+
+h3. Alias: rss_unlimited_categories_related
+
+Lists related articles by category. This is a replacement for the standard Textpattern related article tag that uses the unlimited category tables instead of the standard Textpattern category 1 and 2 fields.
+
+|^.
+|_. attribute |_. description |_. default |_. example |
+|-.
+| section | Accepts a comma separated list of sections that posts are listed from. @section="!photos,writing,thoughts"@ (writing AND thoughts AND NOT photos), or just @section="!photos"@ (all sections except photos). | | section1,section2 |
+| form | The article form used in the article list. | default | @form="myform"@ |
+| limit | The maximum number of articles returned. | 999 | @limit="5"@ |
+| offset | Excludes x number of articles from the beginning of the article listing. | 0 | |
+| time | Accepts one of 3 options “past”, “future” or “any”. By default (past) will display articles with a posted date before the current date/time. Selecting FUTURE will display articles with a posted date after the current date/time. Selecting ALL will display all articles regardless of posted date. | past | any |
+| sort | The field the articles are sorted by. | uPosted desc | title asc |
+
+
+h2. Tag: rss_sct_permlink
+
+h3. rss_sct_permlink
+
+Build article permlinks in /section/category/title format. Use as a replacement for the @<txp:permlink/>@ tag. For example:
+
+bc. <txp:rss_sct_permlink><txp:title/></txp:rss_sct_permlink>
+
+|^.
+|_. attribute |_. description |_. default |_. example |
+|-.
+| name | The category name to count. |   | @category="mycategory"@ |
+
+
+h2. Tag: rss_uc_count
+
+h3. Alias: rss_unlimited_category_count
+
+Displays the number of articles assigned to a given category.
+
+|^.
+|_. attribute |_. description |_. default |_. example |
+|-.
+| name | The category name to count. | | mycategory |
+| id | ID category to count. | | |
+| section | Accepts a comma separated list of sections that posts are listed from. section=”!photos,writing,thoughts” (writing AND thoughts AND NOT photos), or just section=”!photos” (all sections except photos). | | section1,section2 |
+| time | Accepts one of 3 options “past”, “future” or “any”. By default (past) will display articles with a posted date before the current date/time. Selecting FUTURE will display articles with a posted date after the current date/time. Selecting ALL will display all articles regardless of posted date. | past | any |
+
+
+h2. Tag: rss_if_article_uc
+
+h3. Alias: rss_if_article_unlimited_category
+
+Conditional tag that tells if a particular category is assigned to an article. This is a replacement for the standard Textpattern if article category tag.
+
+|^.
+|_. attribute |_. description |_. default |_. example |
+|-.
+| name | The category name to check. |  | @name="mycategory"@ |
