@@ -1,0 +1,24 @@
+.project
+.komodo.kpf
+.settings
+.buildpath
+.DS_Store
+.DS_Store?
+.Spotlight-V100
+.Trashes
+Icon?
+ehthumbs.db
+Thumbs.db
+*~
+
+# Development files  #
+######################
+/node_modules
+/package-lock.json
+/npm-debug.log
+/yarn.lock
+/yarn-error.log
+.parcel-cache
+.github/index
+.nova
+.vscode
