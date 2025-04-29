@@ -79,18 +79,17 @@ function rss_multi_url()
                     } else {
                         if (isset($u2)) {
                             $rs = lookupByTitleSection($u2, $u1);
-                            $out['id'] = $rs['ID'] ?? '';
-                            $_GET['id'] = $rs['ID'] ?? '';
-                            $out['s'] = $rs['Section'] ?? '';
-                            $_GET['s'] = $rs['Section'] ?? '';
+
+                            $out['id'] = $_GET['id'] = $rs['ID'] ?? null;
+                            $out['s']  = $_GET['s']  = $rs['Section'] ?? null;
+
                             $is_404 = empty($out['s']);
 
                             if (!$out['s'] && empty($u3)) {
-                                $out['c'] = (ckEx('category', $u2)) ? $u2 : null;
-                                $_GET['c'] = (ckEx('category', $u2)) ? $u2 : null;
+                                $out['c'] = $_GET['c'] = (ckEx('category', $u2)) ? $u2 : null;
+
                                 if (!empty($out['c'])) {
-                                    $out['s'] = (ckEx('section', $u1)) ? $u1 : null;
-                                    $_GET['s'] = (ckEx('section', $u1)) ? $u1 : null;
+                                    $out['s'] = $_GET['s'] = (ckEx('section', $u1)) ? $u1 : null;
                                 }
                                 $is_404 = empty($out['c']);
                             }
@@ -101,23 +100,18 @@ function rss_multi_url()
                                 $out['pg'] = $u3;
                                 $is_404 = (empty($out['s']) or empty($out['id']));
                             } else {
-                                $out['id'] = $rs['ID'] ?? '';
-                                $out['s'] = $rs['Section'] ?? '';
-                                $out['c'] = (ckEx('category', $u2)) ? $u2 : '';
-                                $_GET['c'] = (ckEx('category', $u2)) ? $u2 : '';
-                                $_GET['s'] = $rs['Section'] ?? '';
-                                $_GET['id'] = $rs['ID'] ?? '';
+                                $out['id'] = $_GET['id'] = $rs['ID'] ?? '';
+                                $out['s']  = $_GET['s']  = $rs['Section'] ?? '';
+                                $out['c']  = $_GET['c']  = (ckEx('category', $u2)) ? $u2 : '';
                             }
                         }
                         if (!empty($u4)) {
-                            $out['s'] = (ckEx('section', $u1)) ? $u1 : '';
+                            $out['s'] = $_GET['s'] = (ckEx('section', $u1)) ? $u1 : '';
                             $_GET['s'] = (ckEx('section', $u1)) ? $u1 : '';
                         }
                         if ($out['id'] or $out['c']) {
-                            $out['s'] = (ckEx('section', $u1)) ? $u1 : '';
-                            $out['c'] = (ckEx('category', $u2)) ? $u2 : '';
-                            $_GET['c'] = (ckEx('category', $u2)) ? $u2 : '';
-                            $_GET['s'] = (ckEx('section', $u1)) ? $u1 : '';
+                            $out['s'] = $_GET['s'] = (ckEx('section', $u1)) ? $u1 : '';
+                            $out['c'] = $_GET['c'] = (ckEx('category', $u2)) ? $u2 : '';
                         } else {
                             $is_404 = (empty($out['s']) or empty($out['id']));
                         }
@@ -350,6 +344,7 @@ function rss_uc_article_list($atts)
     $id22 = $id;
 
     $actual_id = $id;
+
     extract(lAtts(array(
         'section'        => $s,
         'category'       => $c,
@@ -371,7 +366,6 @@ function rss_uc_article_list($atts)
 
     $parent = "";
     if ($usechildren) {
-
         $rs = safe_rows(
             "name",
             "txp_category",
@@ -416,10 +410,12 @@ function rss_uc_article_list($atts)
     }
 
     $filtersql = "";
+
     if ($filter && $filterfield && $filtername) {
         $subpath = preg_quote(preg_replace("/http:\/\/.*(\/.*)/Ui", "$1", hu), "/");
         $req = preg_replace("/^$subpath/i", "/", serverSet('REQUEST_URI'));
         extract(chopUrl($req));
+
         if ($u2 == $filtername && $u4) {
             $qt = (is_numeric($u4)) ? "" : "'";
             switch ($u3) {
@@ -437,17 +433,19 @@ function rss_uc_article_list($atts)
     }
 
     $time = rssBuildTimeSql($time);
-    $sections=rssBuildSctSql($section);
-    $status=getStatusNum($status);
+    $sections = rssBuildSctSql($section);
+    $status = getStatusNum($status);
 
     $qa0 = array();
     $qa1 = array();
     $cc = 0;
 
     foreach (explode(',', $category) as $category) {
-        if ($category) $catsql[] = " cat.name = '" . doSlash(urldecode($category)) . "' ";
+        if ($category) {
+            $catsql[] = " cat.name = '" . doSlash(urldecode($category)) . "' ";
+        }
     }
-    $categories= isset($catsql) ? ' AND (' . join(' OR ', $catsql) . ') ' : "";
+    $categories = isset($catsql) ? ' AND (' . join(' OR ', $catsql) . ') ' : "";
 
     foreach (explode(',', $andcategory) as $andcategory) {
         $cc++;
@@ -457,7 +455,7 @@ function rss_uc_article_list($atts)
     }
     $andcategories = isset($andcatsql) ? ' AND (' . join(' OR ', $andcatsql) . ') ' : "";
 
-    if ($categories || (! $categories && ! $andcategories)) {
+    if ($categories || (!$categories && !$andcategories)) {
         $q0 = "SELECT DISTINCT t.ID FROM ".PFX."textpattern AS t
         LEFT JOIN ".PFX."textpattern_category AS tc ON t.ID = tc.article_id
         LEFT JOIN ".PFX."txp_category AS cat ON cat.id = tc.category_id
@@ -470,6 +468,7 @@ function rss_uc_article_list($atts)
             }
         }
     }
+
     if ($andcategories) {
         $q1 = "SELECT DISTINCT t.ID FROM ".PFX."textpattern AS t
         LEFT JOIN ".PFX."textpattern_category AS tc ON t.ID = tc.article_id
@@ -501,7 +500,8 @@ function rss_uc_article_list($atts)
 
         $total = safe_count('textpattern', "1=1 " . $articles) - intval($offset);
         $numPages = ceil($total / intval($limit));
-        $pg = (!$pg) ? 1 : $pg;
+        $pg = (!$pg) ? 1 : (int)$pg;
+
         $pgoffset = intval($offset) + (($pg - 1) * intval($limit)).', ';
         // send paging info to txp:newer and txp:older
         $pageout['pg']       = $pg;
@@ -614,7 +614,7 @@ function rss_if_article_uc($atts, $thing)
     global $thisarticle;
     assert_article();
     extract(lAtts(array(
-        'name'        => '',
+        'name' => '',
     ), $atts));
 
     if ($name) {
@@ -782,7 +782,7 @@ function rss_uc_admin_article_save($event, $step, $rs)
                     safe_insert(
                         "textpattern_category",
                         "category_id = ".$val.",
-                        article_id=".$ID
+                        article_id = ".$ID
                     );
                 }
             }
@@ -796,6 +796,7 @@ function rss_uc_admin_articles_deleted($event, $ids, $step='')
     if (is_array($ids)) {
         $ids = array_map('intval', $ids);
         $ids = array_filter($ids); // Remove any zero or negative values
+
         if (!empty($ids)) {
             $id = implode(',', $ids);
             safe_delete(
@@ -812,6 +813,7 @@ function rss_uc_admin_categories_deleted($event, $ids, $step='')
     if (is_array($ids)) {
         $ids = array_map('intval', $ids);
         $ids = array_filter($ids); // Remove any zero or negative values
+
         if (!empty($ids)) {
             $id = implode(',', $ids);
             safe_delete(
