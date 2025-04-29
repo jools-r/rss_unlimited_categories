@@ -29,13 +29,21 @@ if (txpinterface === 'admin') {
 
     if (class_exists('\Textpattern\Tag\Registry')) {
         Txp::get('\Textpattern\Tag\Registry')
+            // ->register('function')
             // ->register('function', 'alias')
+            ->register('rss_if_article_uc')
             ->register('rss_if_article_uc', 'rss_if_article_unlimited_category')
+            ->register('rss_uc_article_list')
             ->register('rss_uc_article_list', 'rss_unlimited_categories_article_list')
+            ->register('rss_uc_related')
             ->register('rss_uc_related', 'rss_unlimited_categories_related')
+            ->register('rss_uc_cloud')
             ->register('rss_uc_cloud', 'rss_unlimited_categories_cloud')
+            ->register('rss_uc_filedunder')
             ->register('rss_uc_filedunder', 'rss_unlimited_categories_filedunder')
+            ->register('rss_uc_list')
             ->register('rss_uc_list', 'rss_unlimited_categories_list')
+            ->register('rss_uc_count')
             ->register('rss_uc_count', 'rss_unlimited_category_count')
             ->register('rss_sct_permlink')
             ;
