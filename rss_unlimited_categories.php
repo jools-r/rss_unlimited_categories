@@ -154,7 +154,7 @@ function rss_uc_filedunder($atts)
     $parents = ($parent) ? " AND c.parent IN('".join("','", doSlash(do_list_unique($parent)))."')" : "";
 
     $cats = array();
-    $rsc = getRows("SELECT c.title, c.name FROM ".PFX."textpattern_category as tc LEFT JOIN  ".PFX."txp_category as c ON tc.category_id = c.id WHERE article_id = ".intval($thisarticle['thisid']).$parents." ORDER BY ".doSlash($sort));
+    $rsc = getRows("SELECT c.title, c.name FROM ".PFX."textpattern_category AS tc LEFT JOIN  ".PFX."txp_category AS c ON tc.category_id = c.id WHERE article_id = ".intval($thisarticle['thisid']).$parents." ORDER BY ".doSlash($sort));
     if ($rsc) {
         foreach ($rsc as $b) {
             if ($linked == 1) {
@@ -309,7 +309,7 @@ function rss_uc_cloud($atts)
     $time = rssBuildTimeSql($time);
 //    $parents = ($parent) ? " WHERE c.parent IN('".join("','", doSlash(do_list_unique($parent)))."')" : "";
 
-    $q = "SELECT tc.category_id, c.name, c.title, c.parent, COUNT(*) AS cc FROM ".PFX."textpattern as t
+    $q = "SELECT tc.category_id, c.name, c.title, c.parent, COUNT(*) AS cc FROM ".PFX."textpattern AS t
         LEFT JOIN ".PFX."textpattern_category AS tc ON t.ID = tc.article_id
         LEFT JOIN ".PFX."txp_category AS c ON tc.category_id = c.id
         WHERE ".$sections." t.Status = 4 ".$time." AND tc.category_id > 0
@@ -390,9 +390,9 @@ function rss_uc_article_list($atts)
     if ($id) {
         $rs = safe_row(
             "*,
-            unix_timestamp(Posted) as uPosted,
-            unix_timestamp(Expires) as uExpires,
-            unix_timestamp(LastMod) as uLastMod",
+            unix_timestamp(Posted) AS uPosted,
+            unix_timestamp(Expires) AS uExpires,
+            unix_timestamp(LastMod) AS uLastMod",
             "textpattern",
             "ID='".intval($id)."'"
         );
@@ -515,9 +515,9 @@ function rss_uc_article_list($atts)
 
         $rs = safe_rows_start(
             "*,
-            unix_timestamp(Posted) as uPosted,
-            unix_timestamp(Expires) as uExpires,
-            unix_timestamp(LastMod) as uLastMod",
+            unix_timestamp(Posted) AS uPosted,
+            unix_timestamp(Expires) AS uExpires,
+            unix_timestamp(LastMod) AS uLastMod",
             "textpattern",
             $q2
         );
@@ -583,8 +583,8 @@ function rss_uc_related($atts)
 
     $cats = array();
     $rsc = getRows(
-        "SELECT c.title, c.name FROM ".PFX."textpattern_category as tc
-        LEFT JOIN  ".PFX."txp_category as c ON tc.category_id = c.id
+        "SELECT c.title, c.name FROM ".PFX."textpattern_category AS tc
+        LEFT JOIN  ".PFX."txp_category AS c ON tc.category_id = c.id
         WHERE article_id = ".intval($thisarticle['thisid'])
     );
 
@@ -656,11 +656,11 @@ function rss_sct_permlink($atts, $thing)
     if ($id) {
         $article = safe_row(
             "*,
-            ID as thisid,
-            unix_timestamp(Posted) as posted,
-            unix_timestamp(Posted) as uPosted,
-            unix_timestamp(Expires) as uExpires,
-            unix_timestamp(LastMod) as uLastMod",
+            ID AS thisid,
+            unix_timestamp(Posted) AS posted,
+            unix_timestamp(Posted) AS uPosted,
+            unix_timestamp(Expires) AS uExpires,
+            unix_timestamp(LastMod) AS uLastMod",
             "textpattern",
             'ID = '.intval($id)
         );
@@ -684,7 +684,7 @@ function rss_sct_permlink($atts, $thing)
             foreach ($rsc as $cat) {
                 $thecats[] = $cat['category_id'];
             }
-            $rs = safe_rows("parent", "txp_category", "id in (".implode(",", $thecats).")");
+            $rs = safe_rows("parent", "txp_category", "id IN (".implode(",", $thecats).")");
             if ($rs) {
                 foreach ($rs as $t) {
                     $linkcat = $t['parent'];
@@ -734,14 +734,14 @@ function rssBuildTimeSql($time)
         $time = "";
         break;
     case 'future':
-        $time = " and Posted > now()";
+        $time = " AND Posted > now()";
         break;
     default:
-        $time = " and Posted <= now()";
+        $time = " AND Posted <= now()";
     }
 
     if (!$prefs['publish_expired_articles']) {
-        $time .= " and (Expires IS NULL or Expires > now() or Expires = 0) ";
+        $time .= " AND (Expires IS NULL OR Expires > now() OR Expires = 0) ";
     }
 
     return $time;
@@ -798,7 +798,10 @@ function rss_uc_admin_articles_deleted($event, $ids, $step='')
         $ids = array_filter($ids); // Remove any zero or negative values
         if (!empty($ids)) {
             $id = implode(',', $ids);
-            safe_delete("textpattern_category", "article_id IN (".$id.")");
+            safe_delete(
+                "textpattern_category",
+                "article_id IN (".$id.")"
+            );
         }
     }
 }
@@ -811,7 +814,10 @@ function rss_uc_admin_categories_deleted($event, $ids, $step='')
         $ids = array_filter($ids); // Remove any zero or negative values
         if (!empty($ids)) {
             $id = implode(',', $ids);
-            safe_delete("textpattern_category", "category_id IN (".$id.")");
+            safe_delete(
+                "textpattern_category",
+                "category_id IN (".$id.")"
+            );
         }
     }
 }
