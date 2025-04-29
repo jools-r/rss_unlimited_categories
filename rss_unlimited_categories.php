@@ -135,14 +135,12 @@ function rss_uc_filedunder($atts)
         'parent'         => '',
         'usemessy'       => 0,
         'sort'           => 'title asc',
+        'listwraptag'    => '',
 
         'wraptag'        => '',
-        'class'          => '',
         'break'          => ', ',
-        'breakclass'     => '',
-        'listwraptag'    => '',
-        'label'          => '',
-        'labeltag'       => '',
+        'label'          => '', // not using global attr to ensure
+        'labeltag'       => '', // label appears inside of listwraptag
     ), $atts));
 
     $parents = ($parent) ? " AND c.parent IN('".join("','", doSlash(do_list_unique($parent)))."')" : "";
@@ -164,8 +162,8 @@ function rss_uc_filedunder($atts)
             }
         }
         return doTag(
-            doLabel($label, $labeltag).
-            doWrap($cats, $wraptag, $break, $class, $breakclass),
+            doLabel($label, $labeltag) .
+            doWrap($cats, $wraptag, $break),
             $listwraptag
         );
     }
@@ -190,14 +188,12 @@ function rss_uc_list($atts)
         'linktosection'  => 'articles',
         'usemessy'       => 0,
         'listwraptag'    => '',
-        'break'          => 'li',
-        'wraptag'        => 'ul',
-        'label'          => '',
-        'labeltag'       => '',
-        'class'          => '',
-        'breakclass'     => '',
         'sort'           => 'title asc',
         'activeclass'    => '',
+
+        'wraptag'        => '',
+        'label'          => '', // not using global attr to ensure
+        'labeltag'       => '', // label appears inside of listwraptag
     ), $atts));
 
     $sections = rssBuildSctSql($section);
@@ -242,8 +238,8 @@ function rss_uc_list($atts)
         }
 
         return doTag(
-            doLabel($label, $labeltag).
-            doWrap($row, $wraptag, $break, $class, $breakclass),
+            doLabel($label, $labeltag) .
+            doWrap($row, $wraptag),
             $listwraptag
         ).n;
     }
@@ -292,11 +288,8 @@ function rss_uc_cloud($atts)
         'sort'           => 'title asc',
         'cloudwraptag'   => 'div',
         'wraptag'        => 'p',
-        'break'          => ', ',
-        'class'          => '',
-        'breakclass'     => '',
-        'label'          => '',
-        'labeltag'       => '',
+        'label'          => '', // not using global attr to ensure
+        'labeltag'       => '', // label appears inside of cloudwraptag
     ), $atts));
 
     $sections = rssBuildSctSql($section);
@@ -324,8 +317,8 @@ function rss_uc_cloud($atts)
         }
         ksort($row);
         return doTag(
-            doLabel($label, $labeltag).
-            doWrap($row, $wraptag, $break, $class, $breakclass),
+            doLabel($label, $labeltag) .
+            doWrap($row, $wraptag),
             $cloudwraptag
         ).n;
     }
@@ -363,7 +356,7 @@ function rss_uc_article_list($atts)
         'filterfield'      => '',
         'filtername'      => '',
 
-        'wraptag'        => '' // as trigger; all other global attributes are then handled automagically
+        'wraptag'        => '', // as trigger; all other global attributes are then handled automagically
     ), $atts));
 
     $parent = "";
