@@ -494,7 +494,8 @@ function rss_uc_article_list($atts)
 
     if ($qa) {
         $articles = " AND ID IN (".implode(',', array_map('intval', $qa)).")";
-        if ($hideself) {
+
+        if ($hideself && $thisarticle) {
             $articles .= " AND ID <> '".intval($thisarticle['thisid'])."'";
         }
 
