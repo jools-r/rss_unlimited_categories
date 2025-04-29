@@ -362,6 +362,8 @@ function rss_uc_article_list($atts)
         'filter'          => 0,
         'filterfield'      => '',
         'filtername'      => '',
+
+        'wraptag'        => '' // as trigger; all other global attributes are then handled automagically
     ), $atts));
 
     $parent = "";
@@ -555,7 +557,7 @@ function rss_uc_article_list($atts)
             $prefs = $prefs22;
             $id = $id22;
 
-            return join('', $articles);
+            return doWrap($articles, $wraptag);
         }
     }
 
