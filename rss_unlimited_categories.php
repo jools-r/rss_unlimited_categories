@@ -25,7 +25,7 @@ if (txpinterface === 'admin') {
     register_callback("rss_uc_admin_articles_deleted", "articles_deleted");
     register_callback("rss_uc_admin_categories_deleted", "categories_deleted");
 } else {
-    register_callback('rss_uc_admin_tab_article_catgroup', 'pretext');
+    register_callback('rss_multi_url', 'pretext');
 
     if (class_exists('\Textpattern\Tag\Registry')) {
         Txp::get('\Textpattern\Tag\Registry')
