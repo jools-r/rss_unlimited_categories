@@ -283,7 +283,7 @@ function rss_uc_cloud($atts)
         'limit'          => 999,
         'weightmin'      => 0,
         'parent'         => '',
-        'linktosection'  => 'article',
+        'linktosection'  => 'articles',
         'usemessy'       => 0,
         'sort'           => 'title asc',
         'cloudwraptag'   => 'div',
@@ -316,6 +316,7 @@ function rss_uc_cloud($atts)
             $row[$r['title']] = tag(htmlspecialchars($r['title']), 'a', ' href="'.$path.'"'.$style.' title="'.htmlspecialchars($r['title']).'"');
         }
         ksort($row);
+
         return doTag(
             doLabel($label, $labeltag) .
             doWrap($row, $wraptag),
@@ -750,7 +751,7 @@ function rss_multiTreeSelectInput($selectname = "", $array = "", $value = "")
 
     foreach ($array as $a) {
         extract($a);
-        if ($name=='root') {
+        if ($name == 'root') {
             continue;
         }
         $selected = in_array($id, $value, true) ? ' selected="selected"' : '';
