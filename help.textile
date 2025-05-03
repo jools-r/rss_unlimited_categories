@@ -8,7 +8,7 @@ The plugin adds a multiple select list to your _Txp › Content › Write_ tab t
 
 It also includes several public side tags to display the categories and list articles by category and an admin tab to set plugin preferences.
 
-p>. » "Plugin preferences":/textpattern/?event=rss_uc_admin_tab_pref
+p>. » "Plugin preferences":/textpattern/index.php?event=prefs#prefs_group_rss_unlimited_categories
 
 
 h2. Installation and Setup

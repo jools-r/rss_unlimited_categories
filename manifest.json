@@ -5,5 +5,5 @@
     "description": "Unlimited categories (tags) per article for Txp 4.9",
     "type": 5,
     "order": 6,
-    "flags": 1
+    "flags": 3
 }

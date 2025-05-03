@@ -1,25 +1,19 @@
 <?php
 if (txpinterface === 'admin') {
-    if (!getRows("SHOW TABLES LIKE '".PFX."textpattern_category'")) {
-        safe_create(
-            'textpattern_category', "
-            `article_id` int(11) NOT NULL default '0',
-            `category_id` int(6) NOT NULL default '0',
-            UNIQUE KEY (`article_id`,`category_id`)"
-        );
-    }
+    // Plugin lifecvcle callbacks
+    register_callback('rss_uc_welcome', 'plugin_lifecycle.rss_unlimited_categories');
 
     register_callback('rss_uc_admin_tab_article_ui', 'article_ui', 'categories');
     register_callback('rss_uc_admin_tab_article_js', 'article');
     register_callback('rss_uc_admin_tab_category', 'category');
 
-    add_privs('rss_uc_admin_tab_pref', '1,2');
-    register_tab("extensions", "rss_uc_admin_tab_pref", "Unlim Cats");
-    register_callback("rss_uc_admin_tab_pref", "rss_uc_admin_tab_pref");
+    // Prefs pane for rss_unlimited_categories
+    add_privs("prefs.rss_uc", "1,2");
+    // Redirect 'Options' link on plugins panel to preferences pane
+    add_privs("plugin_prefs.rss_unlimited_categories", "1,2");
+    register_callback('rss_uc_options_prefs_redirect', 'plugin_prefs.rss_unlimited_categories');
 
-    add_privs('plugin_prefs.rss_unlimited_categories', '1,2');
-    register_callback('rss_uc_admin_tab_pref', 'plugin_prefs.rss_unlimited_categories');
-
+    // Article and category tab callbacks
     register_callback("rss_uc_admin_article_save", "article_posted");
     register_callback("rss_uc_admin_article_save", "article_saved");
     register_callback("rss_uc_admin_articles_deleted", "articles_deleted");
@@ -694,6 +688,75 @@ function rss_sct_permlink($atts, $thing)
 }
 
 //=============================================================
+
+function rss_uc_welcome($event, $step)
+{
+    switch ($step) {
+      case "enabled":
+          add_privs("prefs.rss_unlimited_categories", "1,2");
+          break;
+        case "disabled":
+            break;
+        case "installed": // temporarily changed to test update
+            add_privs("prefs.rss_unlimited_categories", "1,2");
+            // Add table if it does not already exist
+            if (!safe_exists('textpattern_category')) {
+                safe_create(
+                    'textpattern_category', "
+                    `article_id` int(11) NOT NULL default '0',
+                    `category_id` int(6) NOT NULL default '0',
+                    UNIQUE KEY (`article_id`,`category_id`)"
+                );
+            }
+
+            // Rename 'rss_unlim' to rss_unlim_hide_txp_cats and value hide12 to 1 and type to yesnoRadio.
+            if (pref_exists('rss_unlim')) {
+                // change legacy pref name and type
+                // update old value if set
+                safe_update(
+                    'txp_prefs',
+                    "val = '1',
+                     html = 'yesnoRadio'",
+                    "name = 'rss_unlim' AND val = 'hide12'"
+                );
+                safe_update(
+                    'txp_prefs',
+                    "name = 'rss_unlim_hide_txp_cats'",
+                    "name = 'rss_unlim'"
+                );
+
+            }
+
+            // Add prefs for rss_unlimited_categories settings panel
+            // (create_pref checks if a pref already exists)
+            create_pref('rss_unlim_sel_size', 5, 'rss_uc', PREF_PLUGIN, "text_input", 5);
+            create_pref('rss_unlim_sel_parent', '', 'rss_uc', PREF_PLUGIN, "text_input", 10);
+            create_pref('rss_unlim_sel_sections', '', 'rss_uc', PREF_PLUGIN, "text_input", 15);
+            create_pref('rss_unlim_hide_txp_cats', '', 'rss_uc', PREF_PLUGIN, "yesnoRadio", 20);
+            create_pref('rss_unlim_integrity_status', '', 'rss_uc', PREF_PLUGIN, "rss_uc_integrity_check", 25);
+            break;
+        case "deleted":
+            // TODO: Add a warning?
+
+            // Remove all prefs from event 'rss_unlimited_categories'.
+            remove_pref(null, "rss_uc");
+
+            // Remove table
+            safe_drop('textpattern_category');
+
+            // Delete all saved language strings
+            safe_delete('txp_lang', "owner = 'rss_uc'");
+
+            break;
+    }
+    return;
+}
+
+function rss_uc_options_prefs_redirect()
+{
+    header("Location: index.php?event=prefs#prefs_group_rss_unlimited_categories");
+}
+
 function rssBuildSctSql($section)
 {
     if ($section) {
@@ -818,58 +881,9 @@ function rss_uc_admin_categories_deleted($event, $ids, $step='')
     }
 }
 
-
-function rss_uc_admin_tab_pref($event, $step)
+function rss_uc_integrity_check($event, $step)
 {
-    global $prefs, $rss_unlim_sel_size, $rss_unlim_sel_parent, $rss_unlim_sel_sections;
-
-    $message='';
-
-    // Initialize preferences if not set
-    if (!isset($rss_unlim_sel_size)) {
-        set_pref('rss_unlim_sel_size', 5, 'rss_uc', 1);
-    }
-
-    if (!isset($rss_unlim_sel_parent)) {
-        set_pref('rss_unlim_sel_parent', '', 'rss_uc', 1);
-    }
-
-    if (!isset($rss_unlim_sel_sections)) {
-        set_pref('rss_unlim_sel_sections', '', 'rss_uc', 1);
-    }
-
-    if (!isset($prefs['rss_unlim'])) {
-        set_pref('rss_unlim', '', 'rss_uc', 1);
-        $qq = '';
-    } else {
-        $qq = $prefs['rss_unlim'];
-    }
-
-    if (!$rss_unlim_sel_size) {
-        $rss_unlim_sel_size = '5';
-    }
-
-    if (ps("save")) {
-        // pagetop("Unlimited Categories Prefs", "Preferences Saved");
-        // Validate and sanitize input
-        $sel_size = max(1, min(20, intval(ps('rss_unlim_sel_size'))));
-        $sel_parent = doSlash(ps('rss_unlim_sel_parent'));
-        $sel_sections = doSlash(ps('rss_unlim_sel_sections'));
-
-        set_pref('rss_unlim_sel_size', $sel_size, 'rss_uc', 1);
-        set_pref('rss_unlim_sel_parent', $sel_parent, 'rss_uc', 1);
-        set_pref('rss_unlim_sel_sections', $sel_sections, 'rss_uc', 1);
-
-        // Handle rss_unlim checkboxes
-        $rss_unlim = (isset($_POST['rss_unlim'])) ? implode(',', array_map('doSlash', $_POST['rss_unlim'])) : '';
-        set_pref('rss_unlim', $rss_unlim, 'rss_uc', 1);
-        header("Location: index.php?event=rss_uc_admin_tab_pref");
-        exit;
-    }
-
-    pagetop("Unlim Cats Prefs", $message);
-
-    if (ps("fix")) {
+    if (gps("fix_rss_uc")) {
         // Fix broken category links
         safe_query(
             "DELETE tc FROM ".PFX."textpattern_category AS tc
@@ -885,75 +899,19 @@ function rss_uc_admin_tab_pref($event, $step)
         WHERE c.id IS NULL"
     );
 
+    // Get count
     $rsq = $rs[0]['cc'] ?? 0;
 
     if ($rsq) {
-        $chk = "<b>Detect ".intval($rsq)." non-existent links</b>&nbsp;&nbsp;".
-        fInput("submit", "fix", "FIX IT", "publish");
+        $chk = '<span class="alert-block alert-pill error">' . gTxt('rss_uc_status_broken_links', array('{number}' => intval($rsq))) . '</span>&nbsp;&nbsp;'.
+        eLink('prefs', '', 'fix_rss_uc', '1', gTxt('rss_uc_fix_tables'), '', '', '', 'txp-button');
+        set_pref('rss_unlim_integrity_status', 'faulty');
     } else {
-        $chk = "<b>Status OK</b>";
+        $chk = '<span class="alert-block alert-pill success">' . gTxt('rss_uc_status_ok') . '</span>';
+        set_pref('rss_unlim_integrity_status', 'ok');
     }
 
-    $rs = getTree('root', 'article');
-
-    // Sanitize output
-    $sel_size = htmlspecialchars($rss_unlim_sel_size);
-    $sel_parent = htmlspecialchars($rss_unlim_sel_parent);
-    $sel_sections = htmlspecialchars($rss_unlim_sel_sections);
-
-    $out = array();
-
-    $out[] = hed('Config write article tab', 2);
-
-    $out[] =
-    inputLabel(
-        'rss_unlim_sel_size',
-        Txp::get('\Textpattern\UI\Input', 'rss_unlim_sel_size', 'text', $sel_size)->setAtts(array(
-            'id'        => 'rss_unlim_sel_size',
-            'size'      => INPUT_SMALL,
-        )),
-        'Select List Size', '', array('class' => 'txp-form-field')
-    ) .
-    inputLabel(
-        'rss_unlim_sel_parent',
-        Txp::get('\Textpattern\UI\SelectTree', 'rss_unlim_sel_parent', $rs, $sel_parent)->setAtts(array(
-            'id'        => 'rss_unlim_sel_parent',
-        )),
-        //treeSelectInput('rss_unlim_sel_parent', $rs, $sel_parent),
-        'Parent for display', '', array('class' => 'txp-form-field')
-    ) .
-    inputLabel(
-        'rss_unlim_sel_sections',
-        Txp::get('\Textpattern\UI\Input', 'rss_unlim_sel_sections', 'text', $sel_sections)->setAtts(array(
-            'id'        => 'rss_unlim_sel_sections',
-            'size'      => INPUT_REGULAR,
-        )).
-        "<br>Sample: section1,section2",
-        'Display only in sections', '', array('class' => 'txp-form-field')
-    ) .
-    inputLabel(
-        'rss_unlim',
-        Txp::get('\Textpattern\UI\Checkbox', 'rss_unlim[]', 'hide12', ((strpos($qq, 'hide12') === false) ? 0 : 1))->setAtts(array(
-            'id'        => 'rss_unlim',
-        )),
-        //checkbox('rss_unlim[]', 'hide12', ((strpos($qq, 'hide12') === false) ? 0 : 1)),
-        'Hide Category1 and Category2', '', array('class' => 'txp-form-field')
-    ) .
-    inputLabel(
-        'check_rss_uc',
-        $chk,
-        'Check rss_uc', '',  array('class' => 'txp-form-field')
-    );
-
-    $out[] = graf(
-        fInput("submit", "save", gTxt("save"), "publish").
-        eInput("rss_uc_admin_tab_pref").
-        sInput('saveprefs'),
-        array('class' => 'txp-edit-actions')
-    );
-
-    echo hed("Unlimited Categories Preferences", 1, array('class' => 'txp-heading')).
-         form(join('', $out), '', '', 'post', 'txp-edit');
+    return $chk;
 }
 
 
@@ -979,7 +937,7 @@ function rss_uc_admin_tab_category($event = '', $step = '')
 
     // Hide category1/category2 counts if category1 & 2 are hidden in settings
     $js0 = "";
-    if (isset($prefs['rss_unlim']) && strpos($prefs['rss_unlim'], 'hide12') !== false) {
+    if (get_pref('rss_unlim_hide_txp_cats')) {
         $js0 .= '    rss_pp.innerHTML = rss_pp.innerHTML.replace(/&nbsp;\(\d+\)/g, "");';
     }
 
@@ -1048,10 +1006,10 @@ function rss_uc_admin_tab_article_ui($evt, $stp, $data, $rs)
     $out = br.$mtsi.graf(
         eLink('category', 'list', '', '', gTxt('edit'), '', '', '', 'txp-option-link').
         '&nbsp;&nbsp;&nbsp;&nbsp;'.
-        '<a href="#" id="rss_uc_deselect">Deselect all</a>'
+        '<a href="#" id="rss_uc_deselect">' . gTxt('rss_uc_deselect_all') . '</a>'
     );
 
-    if (isset($prefs['rss_unlim']) && strpos($prefs['rss_unlim'], 'hide12') !== false) {
+    if (get_pref('rss_unlim_hide_txp_cats')) {
         $data = $out;
     } else {
         $data = $out.$data;

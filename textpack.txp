@@ -1,0 +1,15 @@
+#@owner rss_uc
+#@language en, en-gb, en-us
+#@prefs
+rss_uc => RSS Unlimited Categories
+rss_unlim_sel_size => Select list size
+rss_unlim_sel_parent => Parent for display
+rss_unlim_sel_sections => Display only in sections
+instructions_rss_unlim_sel_sections => For example: section1, section2
+rss_unlim_hide_txp_cats => Hide Category1 and Category2
+rss_unlim_integrity_status => Database integrity
+rss_uc_status_ok => Status OK
+rss_uc_status_broken_links => {number} non-existent links found
+rss_uc_fix_tables => Repair database
+#@admin
+rss_uc_deselect_all => Deselect all
