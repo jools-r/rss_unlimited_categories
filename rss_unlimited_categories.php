@@ -191,7 +191,6 @@ function rss_uc_list($atts)
         'sort'           => 'title asc',
         'activeclass'    => '',
 
-        'wraptag'        => '',
         'label'          => '', // not using global attr to ensure
         'labeltag'       => '', // label appears inside of listwraptag
     ), $atts));
@@ -239,7 +238,7 @@ function rss_uc_list($atts)
 
         return doTag(
             doLabel($label, $labeltag) .
-            doWrap($row, $wraptag),
+            doWrap($row),
             $listwraptag
         ).n;
     }
@@ -287,7 +286,7 @@ function rss_uc_cloud($atts)
         'usemessy'       => 0,
         'sort'           => 'title asc',
         'cloudwraptag'   => 'div',
-        'wraptag'        => 'p',
+
         'label'          => '', // not using global attr to ensure
         'labeltag'       => '', // label appears inside of cloudwraptag
     ), $atts));
@@ -319,7 +318,7 @@ function rss_uc_cloud($atts)
 
         return doTag(
             doLabel($label, $labeltag) .
-            doWrap($row, $wraptag),
+            doWrap($row),
             $cloudwraptag
         ).n;
     }
@@ -356,8 +355,6 @@ function rss_uc_article_list($atts)
         'filter'          => 0,
         'filterfield'      => '',
         'filtername'      => '',
-
-        'wraptag'        => '', // as trigger; all other global attributes are then handled automagically
     ), $atts));
 
     $parent = "";
@@ -551,7 +548,7 @@ function rss_uc_article_list($atts)
             $prefs = $prefs22;
             $id = $id22;
 
-            return doWrap($articles, $wraptag);
+            return doWrap($articles);
         }
     }
 
