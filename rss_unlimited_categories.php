@@ -772,7 +772,7 @@ function rss_uc_options_prefs_redirect()
 
 function rssBuildSctSql($section)
 {
-    if ($section) {
+    if ($section && $section !='default') {
         $sctsql = array();
         $notsctsql = array();
         foreach (do_list_unique($section) as $section) {
