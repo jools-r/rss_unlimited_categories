@@ -19,7 +19,7 @@ if (txpinterface === 'admin') {
     register_callback("rss_uc_admin_articles_deleted", "articles_deleted");
     register_callback("rss_uc_admin_categories_deleted", "categories_deleted");
 } else {
-    register_callback('rss_multi_url', 'pretext');
+    register_callback('rss_uc_url_handler', 'pretext', '');
 
     if (class_exists('\Textpattern\Tag\Registry')) {
         Txp::get('\Textpattern\Tag\Registry')
@@ -46,73 +46,86 @@ if (txpinterface === 'admin') {
 
 // public
 
-function rss_multi_url()
+function rss_uc_url_handler()
 {
-    global $attach_titles_to_permalinks, $permlink_mode, $pretext;
+    global $permlink_mode, $pretext;
 
-    // set messy variables
-    $out = makeOut('id', 's', 'c', 'q', 'pg', 'p', 'month', 'author');
-    if (!$out['id'] && !$out['s'] && !(txpinterface=='css')) {
-        $subpath = preg_quote(preg_replace("/http:\/\/.*(\/.*)/Ui", "$1", hu), "/");
-        $req = preg_replace("/^$subpath/i", "/", serverSet('REQUEST_URI'));
-        extract(chopUrl($req));
+    // Set to true for debug output
+    $debug = false;
 
-        if (!empty($u1)) {
-            switch($u1) {
-            case 'atom':
-                include txpath.'/publish/atom.php';
-                exit(atom());
-            case 'rss':
-                include txpath.'/publish/rss.php';
-                exit(rss());
-            default:
-                if ($permlink_mode == "section_id_title" || $permlink_mode == "section_title") {
-                    if (empty($u2)) {
-                        $out['s'] = (ckEx('section', $u1)) ? $u1 : '';
-                        $is_404 = empty($out['s']);
+    // debug: Incoming Request_uri
+    if ($debug) {
+        dmp("Request_uri: " . serverSet('REQUEST_URI'));
+    }
+
+    // Don't act on reserved names (except 'category', see rssBuildSctSql)
+    if (!in_array(strtolower($pretext[1]), array('atom', 'rss', 'section', 'author', 'file_download'))) {
+
+        // Don't act on very specific permlink modes
+        if (!in_array($permlink_mode, array('messy', 'year_month_day_title'))) {
+
+            // Url parts are stored in $pretext[1],  $pretext[2],  $pretext[3] …
+            if (empty($pretext[2])) {
+                $pretext['s'] = (ckEx('section', $pretext[1])) ? $pretext[1] : ''; // /section
+                $is_404 = empty($pretext['s']);
                     } else {
-                        if (isset($u2)) {
-                            $rs = lookupByTitleSection($u2, $u1);
+                if (isset($pretext[2])) {
+                    $rs = lookupByTitleSection($pretext[2], $pretext[1]); // /section/title
 
-                            $out['id'] = $_GET['id'] = $rs['ID'] ?? null;
-                            $out['s']  = $_GET['s']  = $rs['Section'] ?? null;
+                    $pretext['id'] = $rs['ID'] ?? '';
+                    $pretext['s']  = $rs['Section'] ?? '';
 
-                            $is_404 = empty($out['s']);
+                    $is_404 = empty($pretext['s']);
 
-                            if (!$out['s'] && empty($u3)) {
-                                $out['c'] = $_GET['c'] = (ckEx('category', $u2)) ? $u2 : null;
+                    if (!$pretext['s'] && empty($pretext[3])) {
 
-                                if (!empty($out['c'])) {
-                                    $out['s'] = $_GET['s'] = (ckEx('section', $u1)) ? $u1 : null;
-                                }
-                                $is_404 = empty($out['c']);
-                            }
-                        }
-                        if (!$out['id'] && isset($u3)) {
-                            $rs = lookupByTitleSection($u3, $u1);
-                            if (empty($rs['ID'])) {
-                                $out['pg'] = $u3;
-                                $is_404 = (empty($out['s']) or empty($out['id']));
-                            } else {
-                                $out['id'] = $_GET['id'] = $rs['ID'] ?? '';
-                                $out['s']  = $_GET['s']  = $rs['Section'] ?? '';
-                                $out['c']  = $_GET['c']  = (ckEx('category', $u2)) ? $u2 : '';
-                            }
-                        }
-                        if (!empty($u4)) {
-                            $out['s'] = $_GET['s'] = (ckEx('section', $u1)) ? $u1 : '';
-                            $_GET['s'] = (ckEx('section', $u1)) ? $u1 : '';
-                        }
-                        if ($out['id'] or $out['c']) {
-                            $out['s'] = $_GET['s'] = (ckEx('section', $u1)) ? $u1 : '';
-                            $out['c'] = $_GET['c'] = (ckEx('category', $u2)) ? $u2 : '';
+                        if (is_numeric($pretext[1])) {
+                            $rs = lookupByID($pretext[1]); // /id/title
+
+                            $pretext['id'] = $rs['ID'] ?? '';
+                            $pretext['s']  = $rs['Section'] ?? '';
                         } else {
-                            $is_404 = (empty($out['s']) or empty($out['id']));
+                            $pretext['c'] = (ckEx('category', $pretext[2])) ? $pretext[2] : '';
+                                }
+
+                        if (!empty($pretext['c'])) {
+                            $pretext['s'] = (ckEx('section',  $pretext[1])) ? $pretext[1] : '';
+                            }
+                        $is_404 = empty($pretext['c']);
                         }
+                }
+
+                if (!$pretext['id'] && isset($pretext[3])) {
+                    $rs = lookupByTitleSection($pretext[3], $pretext[1]); // /section/id/title
+                            if (empty($rs['ID'])) {
+                        $pretext['pg'] = $pretext[3];
+                        $is_404 = (empty($pretext['s']) or empty($pretext['id']));
+                            } else {
+                        $pretext['id'] = $rs['ID'] ?? '';
+                        $pretext['s']  = $rs['Section'] ?? '';
+                        $pretext['c']  = (ckEx('category', $pretext[2])) ? $pretext[2] : '';
+                            }
+                        }
+
+                if (!empty($pretext[4])) {
+                    $pretext['s'] = (ckEx('section',  $pretext[1])) ? $pretext[1] : '';
+                        }
+
+                if ($pretext['id'] or $pretext['c']) {
+                    $pretext['s'] = (ckEx('section',  $pretext[1])) ? $pretext[1] : '';
+                    $pretext['c'] = (ckEx('category', $pretext[2])) ? $pretext[2] : '';
+                        } else {
+                    $is_404 = (empty($pretext['s']) or empty($pretext['id']));
                     }
                 }
             }
         }
+
+    // debug: $pretext after processing
+    if ($debug) {
+        print "<pre>\$pretext: ";
+        print_r($pretext);
+        print "</pre>";
     }
 }
 
@@ -744,7 +757,7 @@ function rss_uc_welcome($event, $step)
             // Remove table
             safe_drop('textpattern_category');
 
-            // Delete all saved language strings
+            // Delete all rss_uc language strings
             safe_delete('txp_lang', "owner = 'rss_uc'");
 
             break;
