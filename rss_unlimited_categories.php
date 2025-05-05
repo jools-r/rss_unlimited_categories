@@ -723,7 +723,7 @@ function rss_uc_welcome($event, $step)
             }
 
             // Rename 'rss_unlim' to rss_unlim_hide_txp_cats and value hide12 to 1 and type to yesnoRadio.
-            if (pref_exists('rss_unlim')) {
+            if (pref_exists('rss_unlim') && !pref_exists('rss_unlim_hide_txp_cats')) {
                 // change legacy pref name and type
                 // update old value if set
                 safe_update(
