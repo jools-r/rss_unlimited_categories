@@ -951,7 +951,7 @@ function rss_uc_admin_tab_category($event = '', $step = '')
     // Hide category1/category2 counts if category1 & 2 are hidden in settings
     $js0 = "";
     if (get_pref('rss_unlim_hide_txp_cats')) {
-        $js0 .= '    rss_pp.innerHTML = rss_pp.innerHTML.replace(/&nbsp;\(\d+\)/g, "");';
+        $js0 .= '    rss_pp.lastChild.remove();';
     }
 
     $js = <<<EOF
