@@ -334,7 +334,7 @@ function rss_uc_cloud($atts)
 
 function rss_uc_article_list($atts)
 {
-    global $s, $c, $pg, $prefs, $thisarticle, $id, $has_article_tag;
+    global $s, $c, $pg, $prefs, $thisarticle, $thispage, $id, $has_article_tag;
 
     $thisarticle22 = $thisarticle;
     $s22 = $s;
@@ -499,19 +499,23 @@ function rss_uc_article_list($atts)
             $articles .= " AND ID <> '".intval($thisarticle['thisid'])."'";
         }
 
-        $total = safe_count('textpattern', "1=1 " . $articles) - intval($offset);
+        $grand_total =  safe_count('textpattern', "1=1 " . $articles);
+        $total = $grand_total - intval($offset);
         $numPages = ceil($total / intval($limit));
         $pg = (!$pg) ? 1 : (int)$pg;
 
         $pgoffset = intval($offset) + (($pg - 1) * intval($limit)).', ';
         // send paging info to txp:newer and txp:older
-        $pageout['pg']       = $pg;
-        $pageout['numPages'] = $numPages;
-        $pageout['s']        = $s;
-        $pageout['c']        = $c;
-        $pageout['total']    = $total;
+        $thispage = array(
+            'pg'          => $pg,
+            'numPages'    => $numPages,
+            's'           => $s,
+            'c'           => $c,
+            'context'     => 'article',
+            'grandtotal'  => $grand_total,
+            'total'       => $total
+        );
 
-        $GLOBALS['thispage'] = $pageout;
         $q2 = "1=1 $time $articles ORDER BY ".doSlash($sort)." LIMIT " . $pgoffset . intval($limit);
 
         $rs = safe_rows_start(
@@ -530,7 +534,7 @@ function rss_uc_article_list($atts)
                 ++$count;
                 $comparing = $a['ID'];
                 populateArticleData($a);
-                global $thisarticle, $uPosted, $limit;
+//                global $thisarticle, $uPosted, $limit;
                 $thisarticle['parentcat'] = $parent;
                 $thisarticle['thiscat'] = $category;
                 $thisarticle['is_first'] = ($count == 1);
@@ -544,7 +548,7 @@ function rss_uc_article_list($atts)
 
                 // sending these to paging_link(); Required?
                 $uPosted = $a['uPosted'];
-                $limit = $limit;
+                // $limit = $limit;
             }
 
             $has_article_tag = true;
