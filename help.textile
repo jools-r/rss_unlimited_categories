@@ -180,20 +180,6 @@ Lists related articles by category. This is a replacement for the standard Textp
 | sort | The field the articles are sorted by. | uPosted desc | title asc |
 
 
-h2. Tag: rss_sct_permlink
-
-h3. rss_sct_permlink
-
-Build article permlinks in /section/category/title format. Use as a replacement for the @<txp:permlink/>@ tag. For example:
-
-bc. <txp:rss_sct_permlink><txp:title/></txp:rss_sct_permlink>
-
-|^.
-|_. attribute |_. description |_. default |_. example |
-|-.
-| name | The category name to count. |   | @category="mycategory"@ |
-
-
 h2. Tag: rss_uc_count
 
 h3. Alias: rss_unlimited_category_count
@@ -203,17 +189,36 @@ Displays the number of articles assigned to a given category.
 |^.
 |_. attribute |_. description |_. default |_. example |
 |-.
-| name | The category name to count. | | mycategory |
-| id | ID category to count. | | |
-| section | Accepts a comma separated list of sections that posts are listed from. section=”!photos,writing,thoughts” (writing AND thoughts AND NOT photos), or just section=”!photos” (all sections except photos). | | section1,section2 |
-| time | Accepts one of 3 options “past”, “future” or “any”. By default (past) will display articles with a posted date before the current date/time. Selecting FUTURE will display articles with a posted date after the current date/time. Selecting ALL will display all articles regardless of posted date. | past | any |
+| name | Count articles in named category. | | mycategory |
+| id | Count articles in ID of category. | | |
+| section | Restrict article count to a particular section or combination of sections. Takes a comma-separated list of sections, for example @section="!photos,writing,thoughts"@ (writing AND thoughts AND NOT photos), or just @section="!photos"@ (all sections except photos). | | @section1,section2@ |
+| time | Restrict article count to articles in the “past”, “future” or “any” (both). By default (PAST) will count articles with a posted date before the current date/time. Selecting FUTURE will count articles with a posted date after the current date/time. Selecting ANY will count all articles irrespective of posted date. | past | any |
+
+
+h2. Tag: rss_sct_permlink
+
+h3. rss_sct_permlink
+
+Build article permlinks in /section/category/title format. Use as a replacement for the @txp:permlink@ tag. For example:
+
+bc. <txp:rss_sct_permlink><txp:title/></txp:rss_sct_permlink>
+
+|^.
+|_. attribute |_. description |_. default |_. example |
+|-.
+| id | Article id#. |   | @id="123"@ |
+| category | Permlink to category name. |   | @category="my-category"@ |
+| isparent | Determine if category is parent category. | 0 | @isparent="1"@ |
+| findparent | Find parent category of article id. | 0 | @findparent="1"@ |
+| useparent | Permlink to parent category of a category. | 0 | @useparent="1"@ |
+| inparents | Determine if article id# is in one the parent categories. |   | @inparents="category1,category-2"@ |
 
 
 h2. Tag: rss_if_article_uc
 
 h3. Alias: rss_if_article_unlimited_category
 
-Conditional tag that tells if a particular category is assigned to an article. This is a replacement for the standard Textpattern if article category tag.
+An individual article level tag to detect if a particular category is assigned to an article. Use as a replacement for Textpattern’s @txp:if_article_category@ tag.
 
 |^.
 |_. attribute |_. description |_. default |_. example |
