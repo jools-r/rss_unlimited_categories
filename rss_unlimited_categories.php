@@ -359,9 +359,9 @@ function rss_uc_article_list($atts)
         'sort'           => 'uPosted desc',
         'id'             => '',
         'hideself'       => '1',
-        'filter'          => 0,
-        'filterfield'      => '',
-        'filtername'      => '',
+        'filter'         => 0,
+        'filterfield'    => '',
+        'filtername'     => '',
     ), $atts));
 
     $parent = "";
@@ -642,7 +642,7 @@ function rss_sct_permlink($atts, $thing)
     extract(lAtts(array(
         'isparent'    => 0,
         'useparent'   => 0,
-        'findparent'   => 0,
+        'findparent'  => 0,
         'inparents'   => '',
         'category'    => $c,
         'id'          => '',
